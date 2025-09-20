@@ -2,13 +2,12 @@
 import streamlit as st
 import pandas as pd
 import requests
-import pytz
-import requests
 from urllib.parse import quote
-from rich.console import Console
-from rich.table import Table
+#from rich.console import Console
+#from rich.table import Table
 
-console = Console()
+st.set_page_config(page_title="World Weather", page_icon="🌦️", layout="centered")
+st.title("🌎 World Weather Dashboard")
 
 tz_cities = [
     "America/New_York",
@@ -25,29 +24,36 @@ tz_cities = [
 def tz_to_city(tz: str) -> str:
     return tz.split("/")[-1].replace("_", " ")
 
-table = Table(title="🌦️ Weather Dashboard", style="cyan", show_header=True, header_style="bold magenta")
-table.add_column("City_Name", style="cyan", no_wrap=True)
-table.add_column("Temperature", justify="center", style="magenta")
-table.add_column("Humidity", justify="center", style="magenta")
-table.add_column("Wind Speed", justify="center", style="magenta")
+session = request.session()
+session.header.update({"User-Agent": "Mozilla/5.0 (compatible; StreamlitRender/1.0)"})
 
-for tz in tz_cities:
-    city = tz_to_city(tz)
-    city_q = quote(city)
+@st.cache_data(ttl=300)
+def fetch_city_weather(city_name)
     try:
-        resp = requests.get(f"https://wttr.in/{city_q}", params={"format": "%t|%h|%w"}, timeout=10)
-        if resp.ok:
-            parts = resp.text.strip().split("|")
-            if len(parts) == 3:
-                temp, humidity, wind = [p.strip() for p in parts]
-                table.add_row(city, temp, humidity, wind)
-
-            else:
-                table.add_row(city, f"Error {resp.status_code}", "", "")
-
+        r = requests.get(f"https://wttr.in/{city_name}", timeout=10)
+        if not r.ok:
+            return {"Temperature": f"Error {r.status_code}", "Humidity": "-", "Wind": "-"}
+        j = r.json()
+        cur = (j.get("current_condition") or [{}])[0]
+        # choose °F or °C; here we show °F (swap to temp_C if you prefer)
+        temp = cur.get("temp_F")
+        hum = cur.get("humidity")
+        wind = cur.get("windspeedMiles")
+        return {
+            "Temperature": f"{temp}°F" if temp is not None else "-",
+            "Humidity": f"{hum}%" if hum is not None else "-",
+            "Wind": f"{wind} mph" if wind is not None else "-",
+        }
     except Exception as e:
-        table.add_row(city, f"Exception {e.__class__.__name__}", "", "")
+        return {"Temperature": f"Exception: {e.__class__.__name__}", "Humidity": "-", "Wind": "-"}
 
+with st.status("Fetching weather…", expanded=False):
+    rows = []
+    for tz in TZ_CITIES:
+        city = tz_to_city(tz)
+        data = fetch_city_weather(city)
+        rows.append({"City": city, **data})
 
-
-console.print(table)
+df = pd.DataFrame(rows, columns=["City", "Temperature", "Humidity", "Wind"])
+st.dataframe(df, use_container_width=True)
+st.caption("Data from wttr.in (no API key required). Updates every ~5 minutes.")
