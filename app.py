@@ -1,12 +1,16 @@
-# app.py
+#live weather dashboard
+import streamlit as st
+import pandas as pd
+import requests
+import pytz
 import requests
 from urllib.parse import quote
-import pandas as pd
-import streamlit as st
+from rich.console import Console
+from rich.table import Table
 
-st.set_page_config(page_title="World Weather", page_icon="🌦️", layout="centered")
+console = Console()
 
-TZ_CITIES = [
+tz_cities = [
     "America/New_York",
     "Europe/London",
     "Europe/Paris",
@@ -21,30 +25,29 @@ TZ_CITIES = [
 def tz_to_city(tz: str) -> str:
     return tz.split("/")[-1].replace("_", " ")
 
-@st.cache_data(ttl=300)  # cache for 5 min
-def fetch_city_weather(city_name: str):
-    city_q = quote(city_name)
-    resp = requests.get(
-        f"https://wttr.in/{city_q}",
-        params={"format": "%t|%h|%w"},  # temp | humidity | wind
-        timeout=10,
-    )
-    if not resp.ok:
-        return {"Temperature": f"Error {resp.status_code}", "Humidity": "-", "Wind": "-"}
-    parts = resp.text.strip().split("|")
-    if len(parts) != 3:
-        return {"Temperature": "Parse error", "Humidity": "-", "Wind": "-"}
-    temp, humidity, wind = [p.strip() for p in parts]
-    return {"Temperature": temp, "Humidity": humidity, "Wind": wind}
+table = Table(title="🌦️ Weather Dashboard", style="cyan", show_header=True, header_style="bold magenta")
+table.add_column("City_Name", style="cyan", no_wrap=True)
+table.add_column("Temperature", justify="center", style="magenta")
+table.add_column("Humidity", justify="center", style="magenta")
+table.add_column("Wind Speed", justify="center", style="magenta")
 
-st.title("🌎 World Weather Dashboard")
-
-rows = []
-for tz in TZ_CITIES:
+for tz in tz_cities:
     city = tz_to_city(tz)
-    data = fetch_city_weather(city)
-    rows.append({"City": city, **data})
+    city_q = quote(city)
+    try:
+        resp = requests.get(f"https://wttr.in/{city_q}", params={"format": "%t|%h|%w"}, timeout=10)
+        if resp.ok:
+            parts = resp.text.strip().split("|")
+            if len(parts) == 3:
+                temp, humidity, wind = [p.strip() for p in parts]
+                table.add_row(city, temp, humidity, wind)
 
-df = pd.DataFrame(rows, columns=["City", "Temperature", "Humidity", "Wind"])
-st.dataframe(df, use_container_width=True)
-st.caption("Data from wttr.in (no API key required). Updates every ~5 minutes.")
+            else:
+                table.add_row(city, f"Error {resp.status_code}", "", "")
+
+    except Exception as e:
+        table.add_row(city, f"Exception {e.__class__.__name__}", "", "")
+
+
+
+console.print(table)
