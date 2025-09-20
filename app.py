@@ -20,6 +20,11 @@ TZ_CITIES = [
     "America/Boise",
     "America/Phoenix",
     "America/Los_Angeles",
+    "Europe/Athens",
+    "Europe/Piraeus",
+    "Europe/Riga",
+    "Europe/Vilnius",
+    "Europe/Luxembourg",
     "Europe/London",
     "Europe/Paris",
     "Asia/Tokyo",
@@ -39,6 +44,13 @@ TZ_CITIES = [
     "Europe/Helsinki",
     "Europe/Copenhagen",
     "Europe/London",
+    "Europe/Paris",
+    "Asia/Jakarta",
+    "Asia/Kolkata",
+    "Asia/Kathmandu",
+    "Asia/Dhaka",
+    "South America/Sao_Paulo",
+    "South America/Buenos_Aires"
 ]
 
 def tz_to_city(tz: str) -> str:
