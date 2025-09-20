@@ -11,6 +11,16 @@ st.title("🌎 World Weather Dashboard")
 
 TZ_CITIES = [
     "America/New_York",
+    "America/Lynchburg",
+    "America/Chicago",
+    "America/Detroit",
+    "America/Phoenix",
+    "America/Los_Angeles",
+    "America/Anchorage",
+    "America/Denver",
+    "America/Boise",
+    "America/Phoenix",
+    "America/Los_Angeles",
     "Europe/London",
     "Europe/Paris",
     "Asia/Tokyo",
@@ -19,6 +29,17 @@ TZ_CITIES = [
     "Asia/Seoul",
     "Asia/Singapore",
     "Australia/Sydney",
+    "Europe/Berlin",
+    "Europe/Rome",
+    "Europe/Milan",
+    "Europe/Warsaw",
+    "Europe/Lisbon",
+    "Europe/Madrid",
+    "Europe/Stockholm",
+    "Europe/Oslo",
+    "Europe/Helsinki",
+    "Europe/Copenhagen",
+    "Europe/London",
 ]
 
 def tz_to_city(tz: str) -> str:
