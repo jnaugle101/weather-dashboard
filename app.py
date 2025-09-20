@@ -11,7 +11,6 @@ st.title("🌎 World Weather Dashboard")
 
 TZ_CITIES = [
     "America/New_York",
-    "America/Lynchburg",
     "America/Chicago",
     "America/Detroit",
     "America/Phoenix",
