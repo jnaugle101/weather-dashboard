@@ -9,7 +9,7 @@ from urllib.parse import quote
 st.set_page_config(page_title="World Weather", page_icon="🌦️", layout="centered")
 st.title("🌎 World Weather Dashboard")
 
-tz_cities = [
+TZ_CITIES = [
     "America/New_York",
     "Europe/London",
     "Europe/Paris",
@@ -24,13 +24,14 @@ tz_cities = [
 def tz_to_city(tz: str) -> str:
     return tz.split("/")[-1].replace("_", " ")
 
-session = request.session()
-session.header.update({"User-Agent": "Mozilla/5.0 (compatible; StreamlitRender/1.0)"})
+session = requests.Session()
+session.headers.update({"User-Agent": "Mozilla/5.0 (compatible; StreamlitRender/1.0)"})
 
 @st.cache_data(ttl=300)
-def fetch_city_weather(city_name)
+def fetch_city_weather(city_name: str):
     try:
-        r = requests.get(f"https://wttr.in/{city_name}", timeout=10)
+        city_q = quote(city_name)
+        r = session.get(f"https://wttr.in/{city_q}", params={"format": "j1"}, timeout=8)
         if not r.ok:
             return {"Temperature": f"Error {r.status_code}", "Humidity": "-", "Wind": "-"}
         j = r.json()
